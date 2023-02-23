@@ -1,0 +1,55 @@
+{
+    "author": {
+        "name": "Brandon Scott",
+        "url": "https://github.com/brandongregoryscott"
+    },
+    "description": "ESLint config to be shared across projects",
+    "devDependencies": {
+        "commitizen": "4.2.4",
+        "cz-conventional-changelog": "3.3.0",
+        "eslint": "8.34.0",
+        "eslint-plugin-collation": "1.1.2",
+        "eslint-plugin-import": "2.27.5",
+        "eslint-plugin-typescript-sort-keys": "2.1.0",
+        "husky": "7.0.4",
+        "prettier": "2.5.1",
+        "semantic-release": "19.0.3"
+    },
+    "engines": {
+        "node": ">=14"
+    },
+    "files": ["src"],
+    "keywords": [
+        "lint",
+        "code-style",
+        "typescript",
+        "eslint",
+        "eslint-config",
+        "react",
+        "react-hooks",
+        "hooks",
+        "eslint-plugin",
+        "eslintplugin"
+    ],
+    "license": "Apache-2.0",
+    "main": "src/index.js",
+    "name": "@brandongregoryscott/eslint-config",
+    "peerDependencies": {
+        "@typescript-eslint/parser": ">=5",
+        "@typescript-eslint/eslint-plugin": ">=5",
+        "@typescript-eslint/utils": ">=5",
+        "eslint": ">=6",
+        "eslint-plugin-collation": "^1.1.2",
+        "eslint-plugin-import": "^2.27.5",
+        "eslint-plugin-typescript-sort-keys": "^2.1.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/brandongregoryscott/eslint-config.git"
+    },
+    "scripts": {
+        "prepare": "husky install",
+        "semantic-release": "semantic-release"
+    },
+    "version": "0.0.0-development"
+}
