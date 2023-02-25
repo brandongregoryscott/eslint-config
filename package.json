@@ -18,7 +18,11 @@
     "engines": {
         "node": ">=14"
     },
-    "files": ["src"],
+    "files": [
+        "index.js",
+        "react.js",
+        "typescript.js"
+    ],
     "keywords": [
         "lint",
         "code-style",
@@ -32,7 +36,7 @@
         "eslintplugin"
     ],
     "license": "Apache-2.0",
-    "main": "src/index.js",
+    "main": "index.js",
     "name": "@brandongregoryscott/eslint-config",
     "peerDependencies": {
         "@typescript-eslint/parser": ">=5",
