@@ -12,7 +12,8 @@ const config = {
                 null: "ignore",
             },
         ],
-        "import/no-duplicates": "error"
+        "no-console": "error",
+        "import/no-duplicates": "error",
     },
 };
 
