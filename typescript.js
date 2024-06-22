@@ -11,6 +11,8 @@ const config = {
     },
     plugins: [
         "@typescript-eslint",
+        "collation",
+        "perfectionist",
         "typescript-sort-keys",
     ],
     rules: {
@@ -40,7 +42,6 @@ const config = {
                 prev: "import",
             },
         ],
-        "@typescript-eslint/sort-type-union-intersection-members": "error",
         "@typescript-eslint/strict-boolean-expressions": "error",
         "typescript-sort-keys/interface": [
             "error",
@@ -54,6 +55,8 @@ const config = {
         "collation/no-default-export": "error",
         "collation/no-inline-export": "error",
         "collation/sort-exports": "error",
+        "perfectionist/sort-intersection-types": "error",
+        "perfectionist/sort-union-types": "error",
     },
 };
 
