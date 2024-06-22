@@ -7,8 +7,8 @@
     "devDependencies": {
         "commitizen": "4.2.4",
         "cz-conventional-changelog": "3.3.0",
-        "eslint": "9.5.0",
-        "eslint-plugin-collation": "1.4.2",
+        "eslint": "8.57.0",
+        "eslint-plugin-collation": "1.5.0",
         "eslint-plugin-import": "2.29.1",
         "eslint-plugin-typescript-sort-keys": "3.2.0",
         "husky": "7.0.4",
@@ -43,7 +43,7 @@
         "@typescript-eslint/eslint-plugin": ">=7",
         "@typescript-eslint/utils": ">=7",
         "eslint": ">=8",
-        "eslint-plugin-collation": ">=1.4.2",
+        "eslint-plugin-collation": ">=1.5.0",
         "eslint-plugin-import": ">=2.29.1",
         "eslint-plugin-perfectionist": "2.11.0",
         "eslint-plugin-typescript-sort-keys": ">=3.2.0"
