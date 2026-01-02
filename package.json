@@ -5,24 +5,21 @@
     },
     "description": "ESLint config to be shared across projects",
     "devDependencies": {
+        "@stylistic/eslint-plugin": "5.6.1",
         "commitizen": "4.2.4",
         "cz-conventional-changelog": "3.3.0",
-        "eslint": "8.57.0",
-        "eslint-plugin-collation": "1.5.0",
-        "eslint-plugin-import": "2.29.1",
-        "eslint-plugin-typescript-sort-keys": "3.2.0",
+        "eslint": "9.39.2",
+        "eslint-plugin-collation": "1.5.1",
+        "eslint-plugin-import": "2.32.0",
+        "eslint-plugin-perfectionist": "5.1.0",
+        "eslint-plugin-react": "7.37.5",
+        "eslint-plugin-react-hooks": "7.0.1",
         "husky": "7.0.4",
         "prettier": "3.2.5",
-        "semantic-release": "19.0.3"
+        "semantic-release": "19.0.3",
+        "typescript-eslint": "8.51.0",
+        "typescript": "5.9.3"
     },
-    "engines": {
-        "node": ">=14"
-    },
-    "files": [
-        "index.js",
-        "react.js",
-        "typescript.js"
-    ],
     "keywords": [
         "lint",
         "code-style",
@@ -36,18 +33,7 @@
         "eslintplugin"
     ],
     "license": "Apache-2.0",
-    "main": "index.js",
     "name": "@brandongregoryscott/eslint-config",
-    "peerDependencies": {
-        "@typescript-eslint/parser": ">=7",
-        "@typescript-eslint/eslint-plugin": ">=7",
-        "@typescript-eslint/utils": ">=7",
-        "eslint": ">=8",
-        "eslint-plugin-collation": ">=1.5.0",
-        "eslint-plugin-import": ">=2.29.1",
-        "eslint-plugin-perfectionist": "2.11.0",
-        "eslint-plugin-typescript-sort-keys": ">=3.2.0"
-    },
     "repository": {
         "type": "git",
         "url": "https://github.com/brandongregoryscott/eslint-config.git"
@@ -56,5 +42,6 @@
         "prepare": "husky install",
         "semantic-release": "semantic-release"
     },
+    "private": true,
     "version": "0.0.0-development"
 }
