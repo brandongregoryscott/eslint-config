@@ -6,17 +6,13 @@
     "description": "ESLint config to be shared across projects",
     "devDependencies": {
         "@stylistic/eslint-plugin": "5.6.1",
-        "commitizen": "4.2.4",
-        "cz-conventional-changelog": "3.3.0",
         "eslint": "9.39.2",
         "eslint-plugin-collation": "1.5.1",
         "eslint-plugin-import": "2.32.0",
         "eslint-plugin-perfectionist": "5.1.0",
         "eslint-plugin-react": "7.37.5",
         "eslint-plugin-react-hooks": "7.0.1",
-        "husky": "7.0.4",
         "prettier": "3.2.5",
-        "semantic-release": "19.0.3",
         "typescript-eslint": "8.51.0",
         "typescript": "5.9.3"
     },
@@ -38,10 +34,7 @@
         "type": "git",
         "url": "https://github.com/brandongregoryscott/eslint-config.git"
     },
-    "scripts": {
-        "prepare": "husky install",
-        "semantic-release": "semantic-release"
-    },
+    "scripts": {},
     "private": true,
     "version": "0.0.0-development"
 }
