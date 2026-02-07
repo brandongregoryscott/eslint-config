@@ -20,6 +20,8 @@ const config = defineConfig([
                 },
             ],
             "no-console": "error",
+            "no-useless-rename": "error",
+            "no-var": "error",
         },
     },
     {
@@ -36,6 +38,15 @@ const config = defineConfig([
             },
         },
         rules: {
+            "@typescript-eslint/consistent-type-definitions": ["error", "type"],
+            "@typescript-eslint/consistent-type-exports": "error",
+            "@typescript-eslint/consistent-type-imports": "error",
+            "@typescript-eslint/explicit-member-accessibility": [
+                "error",
+                {
+                    accessibility: "no-public",
+                },
+            ],
             "@typescript-eslint/strict-boolean-expressions": [
                 "error",
                 {
@@ -44,9 +55,6 @@ const config = defineConfig([
                     allowString: false,
                 },
             ],
-            "@typescript-eslint/consistent-type-definitions": ["error", "type"],
-            "@typescript-eslint/consistent-type-exports": "error",
-            "@typescript-eslint/consistent-type-imports": "error",
         },
     },
     {
@@ -57,6 +65,8 @@ const config = defineConfig([
             "collation/group-exports": "error",
             "collation/no-default-export": "error",
             "collation/no-inline-export": "error",
+            "collation/no-inline-object-type": "error",
+            "collation/prefer-native-private-syntax": "error",
             "collation/sort-dependency-list": "error",
             "collation/sort-exports": "error",
         },
@@ -122,6 +132,32 @@ const config = defineConfig([
             perfectionist: perfectionistPlugin,
         },
         rules: {
+            "perfectionist/sort-classes": [
+                "error",
+                {
+                    fallbackSort: { type: "unsorted" },
+                    groups: [
+                        "readonly-property",
+                        "property",
+                        "private-property",
+                        "constructor",
+                        "abstract-method",
+                        "static-method",
+                        ["get-method", "set-method"],
+                        "method",
+                        "private-static-method",
+                        "private-method",
+                    ],
+                    ignoreCase: true,
+                    newlinesBetween: "ignore",
+                    newlinesInside: "ignore",
+                    order: "asc",
+                    partitionByComment: false,
+                    partitionByNewLine: false,
+                    specialCharacters: "keep",
+                    type: "alphabetical",
+                },
+            ],
             "perfectionist/sort-exports": "error",
             "perfectionist/sort-imports": ["error", { newlinesBetween: 0 }],
             "perfectionist/sort-interfaces": "error",
