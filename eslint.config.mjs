@@ -11,7 +11,7 @@ const config = defineConfig([
     { files: ["**/*.{ts,tsx}"] },
     {
         rules: {
-            curly: "error",
+            curly: ["error", "all"],
             eqeqeq: [
                 "error",
                 "always",
