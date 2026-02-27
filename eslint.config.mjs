@@ -95,6 +95,9 @@ const config = defineConfig([
             "react/jsx-no-constructed-context-values": "error",
             "react/jsx-sort-props": "error",
             "react/self-closing-comp": "error",
+            "react/react-in-jsx-scope": "off",
+            "react/prop-types": "off",
+            "react/no-unescaped-entities": "off",
         },
     },
     {
