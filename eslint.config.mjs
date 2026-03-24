@@ -47,6 +47,7 @@ const config = defineConfig([
                     accessibility: "no-public",
                 },
             ],
+            "@typescript-eslint/no-non-null-assertion": "error",
             "@typescript-eslint/strict-boolean-expressions": [
                 "error",
                 {
