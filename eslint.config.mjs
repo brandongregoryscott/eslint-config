@@ -47,6 +47,7 @@ const config = defineConfig([
                     accessibility: "no-public",
                 },
             ],
+            "@typescript-eslint/no-non-null-assertion": "error",
             "@typescript-eslint/strict-boolean-expressions": [
                 "error",
                 {
@@ -95,6 +96,9 @@ const config = defineConfig([
             "react/jsx-no-constructed-context-values": "error",
             "react/jsx-sort-props": "error",
             "react/self-closing-comp": "error",
+            "react/react-in-jsx-scope": "off",
+            "react/prop-types": "off",
+            "react/no-unescaped-entities": "off",
         },
     },
     {
@@ -164,6 +168,7 @@ const config = defineConfig([
             "perfectionist/sort-intersection-types": "error",
             "perfectionist/sort-object-types": "error",
             "perfectionist/sort-objects": "error",
+            "perfectionist/sort-switch-case": "error",
             "perfectionist/sort-union-types": "error",
         },
     },
