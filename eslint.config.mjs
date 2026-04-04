@@ -22,6 +22,13 @@ const config = defineConfig([
             "no-console": "error",
             "no-useless-rename": "error",
             "no-var": "error",
+            "prefer-destructuring": [
+                "error",
+                {
+                    array: true,
+                    object: true,
+                },
+            ],
         },
     },
     {
