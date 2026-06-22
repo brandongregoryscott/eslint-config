@@ -6,10 +6,14 @@ import stylisticPlugin from "@stylistic/eslint-plugin";
 import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 import perfectionistPlugin from "eslint-plugin-perfectionist";
+import packageJsonPlugin from "eslint-plugin-package-json";
+import * as parserJsonc from "jsonc-eslint-parser";
+
+const TYPESCRIPT_FILES = ["**/*.{ts,tsx}"];
 
 const config = defineConfig([
-    { files: ["**/*.{ts,tsx}"] },
     {
+        files: TYPESCRIPT_FILES,
         rules: {
             curly: ["error", "all"],
             eqeqeq: [
@@ -32,6 +36,7 @@ const config = defineConfig([
         },
     },
     {
+        files: TYPESCRIPT_FILES,
         plugins: {
             "@typescript-eslint": tsEslint.plugin,
         },
@@ -66,6 +71,7 @@ const config = defineConfig([
         },
     },
     {
+        files: TYPESCRIPT_FILES,
         plugins: {
             collation: collationPlugin,
         },
@@ -80,6 +86,7 @@ const config = defineConfig([
         },
     },
     {
+        files: TYPESCRIPT_FILES,
         plugins: {
             react: reactPlugin,
             "react-hooks": reactHooksPlugin,
@@ -109,6 +116,7 @@ const config = defineConfig([
         },
     },
     {
+        files: TYPESCRIPT_FILES,
         plugins: {
             "@stylistic": stylisticPlugin,
         },
@@ -139,6 +147,7 @@ const config = defineConfig([
         },
     },
     {
+        files: TYPESCRIPT_FILES,
         plugins: {
             perfectionist: perfectionistPlugin,
         },
@@ -180,6 +189,7 @@ const config = defineConfig([
         },
     },
     {
+        files: TYPESCRIPT_FILES,
         plugins: {
             import: importPlugin,
         },
@@ -189,6 +199,25 @@ const config = defineConfig([
                 "prefer-top-level",
             ],
             "import/no-duplicates": "error",
+        },
+    },
+    {
+        files: ["package.json"],
+        plugins: {
+            "package-json": packageJsonPlugin,
+        },
+        languageOptions: {
+            parser: parserJsonc,
+        },
+        extends: [packageJsonPlugin.configs.recommended],
+        rules: {
+            "package-json/restrict-dependency-ranges": [
+                "error",
+                {
+                    forDependencyTypes: ["dependencies", "devDependencies"],
+                    rangeType: "pin",
+                },
+            ],
         },
     },
     { ignores: ["dist", "eslint.config.mjs"] },
