@@ -24,6 +24,7 @@ const config = defineConfig([
                 },
             ],
             "no-console": "error",
+            "no-nested-ternary": "error",
             "no-useless-rename": "error",
             "no-var": "error",
             "prefer-destructuring": [
@@ -78,6 +79,7 @@ const config = defineConfig([
         rules: {
             "collation/group-exports": "error",
             "collation/no-default-export": "error",
+            "collation/no-destructured-props-parameter": "error",
             "collation/no-inline-export": "error",
             "collation/no-inline-object-type": "error",
             "collation/prefer-native-private-syntax": "error",
