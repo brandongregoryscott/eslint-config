@@ -2,7 +2,7 @@ import { defineConfig } from "eslint/config";
 import tsEslint from "typescript-eslint";
 import collationPlugin from "eslint-plugin-collation";
 import importPlugin from "eslint-plugin-import";
-import stylisticPlugin from "@stylistic/eslint-plugin";
+import spacing from "./spacing.mjs";
 import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 import perfectionistPlugin from "eslint-plugin-perfectionist";
@@ -117,37 +117,7 @@ const config = defineConfig([
             "react/no-unescaped-entities": "off",
         },
     },
-    {
-        files: TYPESCRIPT_FILES,
-        plugins: {
-            "@stylistic": stylisticPlugin,
-        },
-        rules: {
-            "@stylistic/padding-line-between-statements": [
-                "error",
-                {
-                    blankLine: "always",
-                    next: "export",
-                    prev: "*",
-                },
-                {
-                    blankLine: "never",
-                    next: "export",
-                    prev: "export",
-                },
-                {
-                    blankLine: "always",
-                    next: "*",
-                    prev: "import",
-                },
-                {
-                    blankLine: "never",
-                    next: "import",
-                    prev: "import",
-                },
-            ],
-        },
-    },
+    ...spacing,
     {
         files: TYPESCRIPT_FILES,
         plugins: {

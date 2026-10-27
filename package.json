@@ -5,7 +5,10 @@
     },
     "description": "ESLint config to be shared across projects",
     "devDependencies": {
-        "@stylistic/eslint-plugin": "5.9.0",
+        "@stylistic/eslint-plugin": "5.10.0",
+        "@typescript-eslint/eslint-plugin": "8.72.1",
+        "@typescript-eslint/parser": "8.72.1",
+        "@vitest/eslint-plugin": "1.6.28",
         "eslint": "9.39.3",
         "eslint-plugin-collation": "1.8.0",
         "eslint-plugin-import": "2.32.0",
@@ -13,9 +16,11 @@
         "eslint-plugin-perfectionist": "5.6.0",
         "eslint-plugin-react": "7.37.5",
         "eslint-plugin-react-hooks": "7.0.1",
+        "jsonc-eslint-parser": "3.3.0",
         "prettier": "3.8.1",
-        "typescript": "5.9.3",
-        "typescript-eslint": "8.56.1"
+        "typescript": "6.0.3",
+        "typescript-eslint": "8.72.1",
+        "vitest": "5.0.5"
     },
     "keywords": [
         "lint",
@@ -35,7 +40,14 @@
         "type": "git",
         "url": "https://github.com/brandongregoryscott/eslint-config.git"
     },
-    "scripts": {},
+    "scripts": {
+        "format": "prettier eslint.config.mjs spacing.mjs tests package.json --check",
+        "format:fix": "prettier eslint.config.mjs spacing.mjs tests package.json --write",
+        "lint": "eslint . --max-warnings 0",
+        "lint:fix": "eslint . --fix",
+        "test": "vitest run"
+    },
     "private": true,
-    "version": "0.0.0-development"
+    "version": "0.0.0-development",
+    "type": "module"
 }
