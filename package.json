@@ -41,8 +41,8 @@
         "url": "https://github.com/brandongregoryscott/eslint-config.git"
     },
     "scripts": {
-        "format": "prettier eslint.config.mjs spacing.mjs tests package.json --check",
-        "format:fix": "prettier eslint.config.mjs spacing.mjs tests package.json --write",
+        "format": "prettier eslint.config.mjs tests package.json --check",
+        "format:fix": "prettier eslint.config.mjs tests package.json --write",
         "lint": "eslint . --max-warnings 0",
         "lint:fix": "eslint . --fix",
         "test": "vitest run"

@@ -2,8 +2,15 @@ import { ESLint } from "eslint";
 import { format } from "prettier";
 import { describe, expect, it } from "vitest";
 import tseslint from "typescript-eslint";
-import spacing from "../spacing.mjs";
 import fullConfig from "../eslint.config.mjs";
+
+// Exercise the spacing blocks from the actual single-file configuration.
+const spacing = fullConfig.filter((entry) =>
+    Object.hasOwn(
+        entry.rules ?? {},
+        "@stylistic/padding-line-between-statements"
+    )
+);
 
 const config = [...tseslint.configs.recommended, ...spacing];
 
