@@ -1,3 +1,5 @@
+import { resolve } from "node:path";
+import ts from "typescript";
 import { ESLint } from "eslint";
 import { format } from "prettier";
 import { describe, expect, it } from "vitest";
@@ -485,7 +487,11 @@ it("composes with the canonical import, export, and class sorting rules", async 
     const combined = new ESLint({
         overrideConfigFile: true,
         fix: true,
-        overrideConfig: [...fullConfig, tseslint.configs.disableTypeChecked],
+        overrideConfig: [
+            ...fullConfig,
+            tseslint.configs.disableTypeChecked,
+            { rules: { "@typescript-eslint/naming-convention": "off" } },
+        ],
     });
 
     const source = await formatSource(`
@@ -565,6 +571,7 @@ it("requires named JSX handlers, explicit boolean props, and body props destruct
                 languageOptions: { parserOptions: { project: false } },
                 rules: {
                     "@typescript-eslint/strict-boolean-expressions": "off",
+                    "@typescript-eslint/naming-convention": "off",
                 },
             },
         ],
@@ -598,7 +605,11 @@ it("requires named JSX handlers, explicit boolean props, and body props destruct
 it("autofixes shorthand boolean props with the dedicated React rule", async () => {
     const options = {
         overrideConfigFile: true,
-        overrideConfig: [...fullConfig, tseslint.configs.disableTypeChecked],
+        overrideConfig: [
+            ...fullConfig,
+            tseslint.configs.disableTypeChecked,
+            { rules: { "@typescript-eslint/naming-convention": "off" } },
+        ],
     };
     const lint = new ESLint(options);
     const fix = new ESLint({ ...options, fix: true });
@@ -623,4 +634,60 @@ it("autofixes shorthand boolean props with the dedicated React rule", async () =
     expect(fixed.output).toContain("disabled={true}");
     expect(fixed.output).toContain("readOnly={true}");
     expect(fixed.output).toContain("required={false}");
+});
+
+const lintTypedSource = async (source) => {
+    const filePath = resolve("packages/common/src/typed-fixture.ts");
+    // Keep policy fixtures independent of disk caches and application dependencies.
+    const compilerOptions = { strict: true, noLib: true, types: [] };
+    const host = ts.createCompilerHost(compilerOptions);
+
+    host.getSourceFile = (name) =>
+        name === filePath
+            ? ts.createSourceFile(name, source, ts.ScriptTarget.ES2023, true)
+            : undefined;
+
+    const program = ts.createProgram([filePath], compilerOptions, host);
+    const eslint = new ESLint({
+        overrideConfigFile: true,
+        overrideConfig: [
+            ...fullConfig,
+            {
+                languageOptions: {
+                    parserOptions: { project: false, programs: [program] },
+                },
+            },
+        ],
+    });
+
+    return eslint.lintText(source, { filePath });
+};
+
+it("requires uppercase module values while preserving functions, components, locals, and Route", async () => {
+    const [result] = await lintTypedSource(`
+        const labels = { public: "Public" };
+
+        const CONSTANT_LABELS = { public: "Public" };
+
+        const createLabels = () => CONSTANT_LABELS;
+
+        const Component = () => null;
+
+        const Route = { id: "framework route" };
+
+        const total = () => {
+            const first = 1;
+            const second = 2;
+
+            return first + second;
+        };
+
+        export { labels, CONSTANT_LABELS, createLabels, Component, Route, total };
+    `);
+    const namingErrors = result.messages.filter(
+        (message) => message.ruleId === "@typescript-eslint/naming-convention"
+    );
+
+    expect(namingErrors).toHaveLength(1);
+    expect(namingErrors[0].message).toContain("labels");
 });

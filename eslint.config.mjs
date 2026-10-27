@@ -181,6 +181,27 @@ const CONFIG = defineConfig([
                 },
             ],
             "@typescript-eslint/no-non-null-assertion": "error",
+            "@typescript-eslint/naming-convention": [
+                "error",
+                {
+                    selector: "variable",
+                    modifiers: ["const", "global"],
+                    format: ["UPPER_CASE"],
+                },
+                {
+                    selector: "variable",
+                    modifiers: ["const", "global"],
+                    types: ["function"],
+                    format: ["camelCase", "PascalCase", "UPPER_CASE"],
+                },
+                {
+                    // TanStack file routes require this named export.
+                    selector: "variable",
+                    modifiers: ["const", "global"],
+                    filter: { regex: "^Route$", match: true },
+                    format: null,
+                },
+            ],
             "@typescript-eslint/strict-boolean-expressions": [
                 "error",
                 {
