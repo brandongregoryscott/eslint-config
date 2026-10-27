@@ -587,9 +587,40 @@ it("requires named JSX handlers, explicit boolean props, and body props destruct
     const ruleIds = result.messages.map((message) => message.ruleId);
 
     expect(ruleIds).toContain("collation/no-destructured-props-parameter");
+    expect(ruleIds).toContain("react/jsx-boolean-value");
     expect(
         result.messages.filter(
             (message) => message.ruleId === "no-restricted-syntax"
         )
-    ).toHaveLength(3);
+    ).toHaveLength(2);
+});
+
+it("autofixes shorthand boolean props with the dedicated React rule", async () => {
+    const options = {
+        overrideConfigFile: true,
+        overrideConfig: [...fullConfig, tseslint.configs.disableTypeChecked],
+    };
+    const lint = new ESLint(options);
+    const fix = new ESLint({ ...options, fix: true });
+    const source = await formatSource(`
+        const Example = () => <input disabled readOnly={true} required={false} />;
+
+        export { Example };
+    `);
+    const [initial] = await lint.lintText(source, {
+        filePath: "apps/web/src/example.tsx",
+    });
+    const [fixed] = await fix.lintText(source, {
+        filePath: "apps/web/src/example.tsx",
+    });
+
+    expect(
+        initial.messages.filter(
+            (message) => message.ruleId === "react/jsx-boolean-value"
+        )
+    ).toHaveLength(1);
+    expect(fixed.messages).toEqual([]);
+    expect(fixed.output).toContain("disabled={true}");
+    expect(fixed.output).toContain("readOnly={true}");
+    expect(fixed.output).toContain("required={false}");
 });

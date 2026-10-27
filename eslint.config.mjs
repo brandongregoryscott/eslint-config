@@ -235,11 +235,6 @@ const CONFIG = defineConfig([
             "no-restricted-syntax": [
                 "error",
                 {
-                    selector: "JSXAttribute[value=null]",
-                    message:
-                        "Write boolean props explicitly, for example home={true}.",
-                },
-                {
                     selector:
                         'JSXAttribute[name.name=/^on[A-Z]/] > JSXExpressionContainer :matches(ArrowFunctionExpression, FunctionExpression, CallExpression[callee.property.name="bind"])',
                     message:
