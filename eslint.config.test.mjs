@@ -109,7 +109,7 @@ const testCases = [
         `,
     },
     {
-        name: "local declarations and returns",
+        name: "grouped local declarations and separated returns",
         input: `
             function total() {
                 const first = 1;
@@ -120,10 +120,41 @@ const testCases = [
         expected: `
             function total() {
                 const first = 1;
-
                 const second = 2;
 
                 return first + second;
+            }
+        `,
+    },
+    {
+        name: "local uppercase constants and function helpers remain separated",
+        input: `
+            function total() {
+                const first = 1;
+                const MAX_ITEMS = 2;
+                const second = MAX_ITEMS;
+                const third = second;
+                const read = () => third;
+                const fourth = read();
+                const fifth = fourth;
+                return first + fifth;
+            }
+        `,
+        expected: `
+            function total() {
+                const first = 1;
+
+                const MAX_ITEMS = 2;
+
+                const second = MAX_ITEMS;
+                const third = second;
+
+                const read = () => third;
+
+                const fourth = read();
+                const fifth = fourth;
+
+                return first + fifth;
             }
         `,
     },
@@ -342,6 +373,44 @@ describe("shared ESLint spacing", () => {
             expect(secondPass.messages, testCase.name).toEqual([]);
             expect(secondPass.output, testCase.name).toBeUndefined();
         }
+    });
+
+    it("allows compact local variables and intentional grouping in nested and test scopes", async () => {
+        const source = await formatSource(`
+            function total(input: number) {
+                const first = input;
+                let second = first;
+                const { value } = { value: second };
+                const [third] = [value];
+
+                const fourth = third;
+                const fifth = fourth;
+
+                second += 1;
+
+                if (fifth > 0) {
+                    const nested = fifth;
+                    const other = nested;
+
+                    return other;
+                }
+
+                return second;
+            }
+
+            it("groups setup variables", () => {
+                const first = total(1);
+                const second = total(2);
+
+                expect(first + second).toBe(3);
+            });
+        `);
+
+        const [result] = await lint.lintText(source, {
+            filePath: "apps/api/src/fixture.test.ts",
+        });
+
+        expect(result.messages).toEqual([]);
     });
 
     it("preserves compact imports, export lists, overloads, and assertion groups", async () => {

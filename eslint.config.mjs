@@ -34,9 +34,31 @@ const callbackBlock = {
         "ExpressionStatement:has(CallExpression.expression > :matches(ArrowFunctionExpression, FunctionExpression))",
 };
 
+// Ordinary local variables may stay grouped; rule order makes this exception
+// narrower than the boundaries around uppercase constants and function helpers.
+const localVariables = {
+    selector:
+        ":matches(BlockStatement, SwitchCase, StaticBlock) > VariableDeclaration",
+};
+
+const uppercaseConstant = {
+    selector:
+        'VariableDeclaration[kind="const"]:has(VariableDeclarator > Identifier.id[name=/^[A-Z][A-Z0-9_]*$/])',
+};
+
+const functionVariable = {
+    selector:
+        "VariableDeclaration:has(VariableDeclarator > :matches(ArrowFunctionExpression, FunctionExpression).init)",
+};
+
 const statementPadding = [
     { blankLine: "always", prev: "*", next: declarationTypes },
     { blankLine: "always", prev: declarationTypes, next: "*" },
+    { blankLine: "any", prev: localVariables, next: localVariables },
+    { blankLine: "always", prev: "*", next: uppercaseConstant },
+    { blankLine: "always", prev: uppercaseConstant, next: "*" },
+    { blankLine: "always", prev: "*", next: functionVariable },
+    { blankLine: "always", prev: functionVariable, next: "*" },
     { blankLine: "always", prev: "*", next: "block-like" },
     { blankLine: "always", prev: "block-like", next: "*" },
     { blankLine: "always", prev: "*", next: callbackBlock },
