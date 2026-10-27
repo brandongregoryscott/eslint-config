@@ -228,7 +228,30 @@ const CONFIG = defineConfig([
             "react/display-name": "error",
             "react/hook-use-state": "error",
             "react/jsx-boolean-value": ["error", "always"],
-            "react/jsx-handler-names": "error",
+            "react/jsx-handler-names": [
+                "error",
+                { checkLocalVariables: true, checkInlineFunction: true },
+            ],
+            "no-restricted-syntax": [
+                "error",
+                {
+                    selector: "JSXAttribute[value=null]",
+                    message:
+                        "Write boolean props explicitly, for example home={true}.",
+                },
+                {
+                    selector:
+                        'JSXAttribute[name.name=/^on[A-Z]/] > JSXExpressionContainer :matches(ArrowFunctionExpression, FunctionExpression, CallExpression[callee.property.name="bind"])',
+                    message:
+                        "Extract a named handleX event handler before the JSX.",
+                },
+                {
+                    selector:
+                        "JSXAttribute[name.name=/^on[A-Z]/] > JSXExpressionContainer > Identifier:not([name=/^handle[A-Z]/])",
+                    message:
+                        "Name local event handlers handleX; forward parent handlers through props.onX.",
+                },
+            ],
             "react/jsx-no-constructed-context-values": "error",
             "react/jsx-sort-props": "error",
             "react/self-closing-comp": "error",

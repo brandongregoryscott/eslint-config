@@ -553,3 +553,43 @@ it("exposes the same spacing settings through the canonical config", async () =>
         }
     }
 });
+
+it("requires named JSX handlers, explicit boolean props, and body props destructuring", async () => {
+    const eslint = new ESLint({
+        overrideConfigFile: true,
+        overrideConfig: [
+            ...fullConfig,
+            tseslint.configs.disableTypeChecked,
+            {
+                files: ["**/*.tsx"],
+                languageOptions: { parserOptions: { project: false } },
+                rules: {
+                    "@typescript-eslint/strict-boolean-expressions": "off",
+                },
+            },
+        ],
+    });
+    const source = `
+        type Props = { label: string; onSave: () => void };
+
+        const Example = ({ label, onSave }: Props) => (
+            <>
+                <button disabled onClick={() => onSave()}>{label}</button>
+                <button onClick={onSave} />
+            </>
+        );
+
+        export { Example };
+    `;
+    const [result] = await eslint.lintText(source, {
+        filePath: "apps/web/src/example.tsx",
+    });
+    const ruleIds = result.messages.map((message) => message.ruleId);
+
+    expect(ruleIds).toContain("collation/no-destructured-props-parameter");
+    expect(
+        result.messages.filter(
+            (message) => message.ruleId === "no-restricted-syntax"
+        )
+    ).toHaveLength(3);
+});
