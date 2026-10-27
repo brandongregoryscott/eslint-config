@@ -63,6 +63,8 @@ const STATEMENT_PADDING = [
     { blankLine: "always", prev: "block-like", next: "*" },
     { blankLine: "always", prev: "*", next: CALLBACK_BLOCK },
     { blankLine: "always", prev: CALLBACK_BLOCK, next: "*" },
+    { blankLine: "always", prev: "*", next: "if" },
+    { blankLine: "always", prev: "if", next: "*" },
     { blankLine: "always", prev: "*", next: "return" },
     { blankLine: "always", prev: "*", next: "import" },
     { blankLine: "always", prev: "import", next: "*" },

@@ -159,6 +159,36 @@ const testCases = [
         `,
     },
     {
+        name: "consecutive guard clauses and their following statements",
+        input: `
+            function read(value: number) {
+                if (value < 0) {
+                    return 0;
+                }
+                if (value === 0) {
+                    return 1;
+                }
+                value += 1;
+                return value;
+            }
+        `,
+        expected: `
+            function read(value: number) {
+                if (value < 0) {
+                    return 0;
+                }
+
+                if (value === 0) {
+                    return 1;
+                }
+
+                value += 1;
+
+                return value;
+            }
+        `,
+    },
+    {
         name: "class fields, constructors, methods, and getters",
         input: `
             class Store {
