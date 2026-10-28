@@ -663,9 +663,17 @@ const lintTypedSource = async (source) => {
     return eslint.lintText(source, { filePath });
 };
 
-it("requires uppercase module values while preserving functions, components, locals, and Route", async () => {
+it("requires uppercase primitive constants while allowing runtime objects and pseudo-enums", async () => {
     const [result] = await lintTypedSource(`
-        const labels = { public: "Public" };
+        const retryCount = 2;
+
+        const config = { apiUrl: "https://example.test" };
+
+        const system = { theme: "example" };
+
+        const logger = { info: () => undefined };
+
+        const PseudoEnum = { Ready: "ready" } as const;
 
         const CONSTANT_LABELS = { public: "Public" };
 
@@ -682,12 +690,49 @@ it("requires uppercase module values while preserving functions, components, loc
             return first + second;
         };
 
-        export { labels, CONSTANT_LABELS, createLabels, Component, Route, total };
+        export { retryCount, config, system, logger, PseudoEnum, CONSTANT_LABELS, createLabels, Component, Route, total };
     `);
     const namingErrors = result.messages.filter(
         (message) => message.ruleId === "@typescript-eslint/naming-convention"
     );
 
     expect(namingErrors).toHaveLength(1);
-    expect(namingErrors[0].message).toContain("labels");
+    expect(namingErrors[0].message).toContain("retryCount");
+});
+
+it("requires type declarations at module scope while allowing exported types and augmentations", async () => {
+    const eslint = new ESLint({
+        overrideConfigFile: true,
+        overrideConfig: [
+            ...fullConfig,
+            tseslint.configs.disableTypeChecked,
+            { rules: { "@typescript-eslint/naming-convention": "off" } },
+        ],
+    });
+    const source = `
+        export type Global = string;
+
+        declare module "example" {
+            interface Register { value: Global }
+        }
+
+        function read() {
+            type Local = string;
+            interface Nested { value: Local }
+            return "value";
+        }
+
+        export { read };
+    `;
+    const [result] = await eslint.lintText(source, {
+        filePath: "apps/web/src/example.ts",
+    });
+    const scopeErrors = result.messages.filter(
+        (message) => message.ruleId === "no-restricted-syntax"
+    );
+
+    expect(scopeErrors).toHaveLength(2);
+    expect(
+        scopeErrors.every((message) => message.message.includes("module scope"))
+    ).toBe(true);
 });

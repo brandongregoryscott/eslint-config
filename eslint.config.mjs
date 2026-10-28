@@ -184,22 +184,16 @@ const CONFIG = defineConfig([
             "@typescript-eslint/naming-convention": [
                 "error",
                 {
+                    // Runtime objects and pseudo-enums need semantic names too.
                     selector: "variable",
                     modifiers: ["const", "global"],
-                    format: ["UPPER_CASE"],
-                },
-                {
-                    selector: "variable",
-                    modifiers: ["const", "global"],
-                    types: ["function"],
                     format: ["camelCase", "PascalCase", "UPPER_CASE"],
                 },
                 {
-                    // TanStack file routes require this named export.
                     selector: "variable",
                     modifiers: ["const", "global"],
-                    filter: { regex: "^Route$", match: true },
-                    format: null,
+                    types: ["boolean", "number", "string", "array"],
+                    format: ["UPPER_CASE"],
                 },
             ],
             "@typescript-eslint/strict-boolean-expressions": [
@@ -255,6 +249,12 @@ const CONFIG = defineConfig([
             ],
             "no-restricted-syntax": [
                 "error",
+                {
+                    selector:
+                        ":matches(BlockStatement, SwitchCase, StaticBlock) :matches(TSTypeAliasDeclaration, TSInterfaceDeclaration, TSEnumDeclaration)",
+                    message:
+                        "Declare types, interfaces, and enums at module scope.",
+                },
                 {
                     selector:
                         'JSXAttribute[name.name=/^on[A-Z]/] > JSXExpressionContainer :matches(ArrowFunctionExpression, FunctionExpression, CallExpression[callee.property.name="bind"])',
