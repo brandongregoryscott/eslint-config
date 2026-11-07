@@ -119,6 +119,10 @@ const SPACING = [
                 { blankLine: "always", prev: "*", next: ADDITIONAL_TEST_BLOCK },
                 { blankLine: "always", prev: ADDITIONAL_TEST_BLOCK, next: "*" },
             ],
+            "vitest/require-top-level-describe": [
+                "error",
+                { maxNumberOfTopLevelDescribes: 1 },
+            ],
             "vitest/padding-around-describe-blocks": "error",
             "vitest/padding-around-test-blocks": "error",
             "vitest/padding-around-before-all-blocks": "error",
@@ -277,6 +281,34 @@ const CONFIG = defineConfig([
         },
     },
     ...SPACING,
+    {
+        files: ["**/*.{js,mjs,mts,ts,tsx}"],
+        ignores: [
+            "**/*.{test,spec,integration}.{js,mjs,mts,ts,tsx}",
+            "**/{test,tests,test-utils}/**",
+            "**/*-test-utils.{js,mjs,mts,ts,tsx}",
+        ],
+        rules: {
+            "no-restricted-imports": [
+                "error",
+                {
+                    patterns: [
+                        {
+                            group: [
+                                "**/test-utils",
+                                "**/test-utils/**",
+                                "**/*-test-utils",
+                                "**/*-test-utils.*",
+                            ],
+                            message:
+                                "Test utilities must only be imported by tests or other test utilities.",
+                        },
+                    ],
+                },
+            ],
+        },
+    },
+
     {
         files: TYPESCRIPT_FILES,
         plugins: {
