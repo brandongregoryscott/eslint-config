@@ -25,6 +25,7 @@ const options = {
             rules: {
                 "@typescript-eslint/no-unused-vars": "off",
                 "no-unused-vars": "off",
+                "vitest/require-top-level-describe": "off",
             },
         },
     ],
@@ -381,34 +382,35 @@ const testCases = [
     },
 ];
 
-describe("shared ESLint spacing", () => {
-    it("detects missing boundaries, fixes them, and stays stable after Prettier", async () => {
-        for (const testCase of testCases) {
-            const source = await formatSource(testCase.input);
+describe("eslint config", () => {
+    describe("spacing", () => {
+        it("detects missing boundaries, fixes them, and stays stable after Prettier", async () => {
+            for (const testCase of testCases) {
+                const source = await formatSource(testCase.input);
 
-            const expected = await formatSource(testCase.expected);
+                const expected = await formatSource(testCase.expected);
 
-            const filePath =
-                testCase.filename ?? "packages/common/src/fixture.ts";
+                const filePath =
+                    testCase.filename ?? "packages/common/src/fixture.ts";
 
-            const [initial] = await lint.lintText(source, { filePath });
+                const [initial] = await lint.lintText(source, { filePath });
 
-            const [fixed] = await fix.lintText(source, { filePath });
+                const [fixed] = await fix.lintText(source, { filePath });
 
-            const output = await formatSource(fixed.output ?? source);
+                const output = await formatSource(fixed.output ?? source);
 
-            const [secondPass] = await fix.lintText(output, { filePath });
+                const [secondPass] = await fix.lintText(output, { filePath });
 
-            expect(initial.errorCount, testCase.name).toBeGreaterThan(0);
-            expect(fixed.messages, testCase.name).toEqual([]);
-            expect(output, testCase.name).toBe(expected);
-            expect(secondPass.messages, testCase.name).toEqual([]);
-            expect(secondPass.output, testCase.name).toBeUndefined();
-        }
-    });
+                expect(initial.errorCount, testCase.name).toBeGreaterThan(0);
+                expect(fixed.messages, testCase.name).toEqual([]);
+                expect(output, testCase.name).toBe(expected);
+                expect(secondPass.messages, testCase.name).toEqual([]);
+                expect(secondPass.output, testCase.name).toBeUndefined();
+            }
+        });
 
-    it("allows compact local variables and intentional grouping in nested and test scopes", async () => {
-        const source = await formatSource(`
+        it("allows compact local variables and intentional grouping in nested and test scopes", async () => {
+            const source = await formatSource(`
             function total(input: number) {
                 const first = input;
                 let second = first;
@@ -438,15 +440,15 @@ describe("shared ESLint spacing", () => {
             });
         `);
 
-        const [result] = await lint.lintText(source, {
-            filePath: "apps/api/src/fixture.test.ts",
+            const [result] = await lint.lintText(source, {
+                filePath: "apps/api/src/fixture.test.ts",
+            });
+
+            expect(result.messages).toEqual([]);
         });
 
-        expect(result.messages).toEqual([]);
-    });
-
-    it("preserves compact imports, export lists, overloads, and assertion groups", async () => {
-        const source = await formatSource(`
+        it("preserves compact imports, export lists, overloads, and assertion groups", async () => {
+            const source = await formatSource(`
             import { assert, expect, it } from "vitest";
             import { z } from "zod";
 
@@ -473,28 +475,28 @@ describe("shared ESLint spacing", () => {
             export type { Value };
         `);
 
-        const [result] = await lint.lintText(source, {
-            filePath: "apps/api/src/fixture.test.ts",
+            const [result] = await lint.lintText(source, {
+                filePath: "apps/api/src/fixture.test.ts",
+            });
+
+            expect(result.messages).toEqual([]);
+        });
+    });
+
+    it("composes with the canonical import, export, and class sorting rules", async () => {
+        // Virtual fixtures do not have a consumer tsconfig. The formatting rules
+        // still run together with the source config's other syntax-only policies.
+        const combined = new ESLint({
+            overrideConfigFile: true,
+            fix: true,
+            overrideConfig: [
+                ...fullConfig,
+                tseslint.configs.disableTypeChecked,
+                { rules: { "@typescript-eslint/naming-convention": "off" } },
+            ],
         });
 
-        expect(result.messages).toEqual([]);
-    });
-});
-
-it("composes with the canonical import, export, and class sorting rules", async () => {
-    // Virtual fixtures do not have a consumer tsconfig. The formatting rules
-    // still run together with the source config's other syntax-only policies.
-    const combined = new ESLint({
-        overrideConfigFile: true,
-        fix: true,
-        overrideConfig: [
-            ...fullConfig,
-            tseslint.configs.disableTypeChecked,
-            { rules: { "@typescript-eslint/naming-convention": "off" } },
-        ],
-    });
-
-    const source = await formatSource(`
+        const source = await formatSource(`
         type Pair = {
             z: number;
             a: number;
@@ -510,73 +512,73 @@ it("composes with the canonical import, export, and class sorting rules", async 
         export type { Pair };
     `);
 
-    const [fixed] = await combined.lintText(source, {
-        filePath: "fixtures/composition.ts",
+        const [fixed] = await combined.lintText(source, {
+            filePath: "fixtures/composition.ts",
+        });
+
+        const output = await formatSource(fixed.output ?? source);
+
+        const [again] = await combined.lintText(output, {
+            filePath: "fixtures/composition.ts",
+        });
+
+        expect(fixed.messages).toEqual([]);
+        expect(again.messages).toEqual([]);
+        expect(again.output).toBeUndefined();
     });
 
-    const output = await formatSource(fixed.output ?? source);
+    it("exposes the same spacing settings through the canonical config", async () => {
+        const canonical = new ESLint({
+            overrideConfigFile: true,
+            overrideConfig: fullConfig,
+        });
 
-    const [again] = await combined.lintText(output, {
-        filePath: "fixtures/composition.ts",
-    });
+        const reference = new ESLint({
+            overrideConfigFile: true,
+            overrideConfig: config,
+        });
 
-    expect(fixed.messages).toEqual([]);
-    expect(again.messages).toEqual([]);
-    expect(again.output).toBeUndefined();
-});
+        const ruleNames = new Set(
+            spacing.flatMap((entry) => Object.keys(entry.rules))
+        );
 
-it("exposes the same spacing settings through the canonical config", async () => {
-    const canonical = new ESLint({
-        overrideConfigFile: true,
-        overrideConfig: fullConfig,
-    });
+        const filePaths = [
+            "fixtures/policy.ts",
+            "fixtures/policy.mjs",
+            "fixtures/policy.test.ts",
+            "tests/e2e/policy.spec.ts",
+        ];
 
-    const reference = new ESLint({
-        overrideConfigFile: true,
-        overrideConfig: config,
-    });
+        for (const filePath of filePaths) {
+            const effective = await canonical.calculateConfigForFile(filePath);
 
-    const ruleNames = new Set(
-        spacing.flatMap((entry) => Object.keys(entry.rules))
-    );
+            const expected = await reference.calculateConfigForFile(filePath);
 
-    const filePaths = [
-        "fixtures/policy.ts",
-        "fixtures/policy.mjs",
-        "fixtures/policy.test.ts",
-        "tests/e2e/policy.spec.ts",
-    ];
-
-    for (const filePath of filePaths) {
-        const effective = await canonical.calculateConfigForFile(filePath);
-
-        const expected = await reference.calculateConfigForFile(filePath);
-
-        for (const name of ruleNames) {
-            expect(effective.rules[name], `${filePath}: ${name}`).toEqual(
-                expected.rules[name]
-            );
+            for (const name of ruleNames) {
+                expect(effective.rules[name], `${filePath}: ${name}`).toEqual(
+                    expected.rules[name]
+                );
+            }
         }
-    }
-});
-
-it("requires named JSX handlers, explicit boolean props, and body props destructuring", async () => {
-    const eslint = new ESLint({
-        overrideConfigFile: true,
-        overrideConfig: [
-            ...fullConfig,
-            tseslint.configs.disableTypeChecked,
-            {
-                files: ["**/*.tsx"],
-                languageOptions: { parserOptions: { project: false } },
-                rules: {
-                    "@typescript-eslint/strict-boolean-expressions": "off",
-                    "@typescript-eslint/naming-convention": "off",
-                },
-            },
-        ],
     });
-    const source = `
+
+    it("requires named JSX handlers, explicit boolean props, and body props destructuring", async () => {
+        const eslint = new ESLint({
+            overrideConfigFile: true,
+            overrideConfig: [
+                ...fullConfig,
+                tseslint.configs.disableTypeChecked,
+                {
+                    files: ["**/*.tsx"],
+                    languageOptions: { parserOptions: { project: false } },
+                    rules: {
+                        "@typescript-eslint/strict-boolean-expressions": "off",
+                        "@typescript-eslint/naming-convention": "off",
+                    },
+                },
+            ],
+        });
+        const source = `
         type Props = { label: string; onSave: () => void };
 
         const Example = ({ label, onSave }: Props) => (
@@ -588,83 +590,56 @@ it("requires named JSX handlers, explicit boolean props, and body props destruct
 
         export { Example };
     `;
-    const [result] = await eslint.lintText(source, {
-        filePath: "apps/web/src/example.tsx",
+        const [result] = await eslint.lintText(source, {
+            filePath: "apps/web/src/example.tsx",
+        });
+        const ruleIds = result.messages.map((message) => message.ruleId);
+
+        expect(ruleIds).toContain("collation/no-destructured-props-parameter");
+        expect(ruleIds).toContain("react/jsx-boolean-value");
+        expect(
+            result.messages.filter(
+                (message) => message.ruleId === "no-restricted-syntax"
+            )
+        ).toHaveLength(2);
     });
-    const ruleIds = result.messages.map((message) => message.ruleId);
 
-    expect(ruleIds).toContain("collation/no-destructured-props-parameter");
-    expect(ruleIds).toContain("react/jsx-boolean-value");
-    expect(
-        result.messages.filter(
-            (message) => message.ruleId === "no-restricted-syntax"
-        )
-    ).toHaveLength(2);
-});
-
-it("autofixes shorthand boolean props with the dedicated React rule", async () => {
-    const options = {
-        overrideConfigFile: true,
-        overrideConfig: [
-            ...fullConfig,
-            tseslint.configs.disableTypeChecked,
-            { rules: { "@typescript-eslint/naming-convention": "off" } },
-        ],
-    };
-    const lint = new ESLint(options);
-    const fix = new ESLint({ ...options, fix: true });
-    const source = await formatSource(`
+    it("autofixes shorthand boolean props with the dedicated React rule", async () => {
+        const options = {
+            overrideConfigFile: true,
+            overrideConfig: [
+                ...fullConfig,
+                tseslint.configs.disableTypeChecked,
+                { rules: { "@typescript-eslint/naming-convention": "off" } },
+            ],
+        };
+        const lint = new ESLint(options);
+        const fix = new ESLint({ ...options, fix: true });
+        const source = await formatSource(`
         const Example = () => <input disabled readOnly={true} required={false} />;
 
         export { Example };
     `);
-    const [initial] = await lint.lintText(source, {
-        filePath: "apps/web/src/example.tsx",
-    });
-    const [fixed] = await fix.lintText(source, {
-        filePath: "apps/web/src/example.tsx",
-    });
+        const [initial] = await lint.lintText(source, {
+            filePath: "apps/web/src/example.tsx",
+        });
+        const [fixed] = await fix.lintText(source, {
+            filePath: "apps/web/src/example.tsx",
+        });
 
-    expect(
-        initial.messages.filter(
-            (message) => message.ruleId === "react/jsx-boolean-value"
-        )
-    ).toHaveLength(1);
-    expect(fixed.messages).toEqual([]);
-    expect(fixed.output).toContain("disabled={true}");
-    expect(fixed.output).toContain("readOnly={true}");
-    expect(fixed.output).toContain("required={false}");
-});
-
-const lintTypedSource = async (source) => {
-    const filePath = resolve("packages/common/src/typed-fixture.ts");
-    // Keep policy fixtures independent of disk caches and application dependencies.
-    const compilerOptions = { strict: true, noLib: true, types: [] };
-    const host = ts.createCompilerHost(compilerOptions);
-
-    host.getSourceFile = (name) =>
-        name === filePath
-            ? ts.createSourceFile(name, source, ts.ScriptTarget.ES2023, true)
-            : undefined;
-
-    const program = ts.createProgram([filePath], compilerOptions, host);
-    const eslint = new ESLint({
-        overrideConfigFile: true,
-        overrideConfig: [
-            ...fullConfig,
-            {
-                languageOptions: {
-                    parserOptions: { project: false, programs: [program] },
-                },
-            },
-        ],
+        expect(
+            initial.messages.filter(
+                (message) => message.ruleId === "react/jsx-boolean-value"
+            )
+        ).toHaveLength(1);
+        expect(fixed.messages).toEqual([]);
+        expect(fixed.output).toContain("disabled={true}");
+        expect(fixed.output).toContain("readOnly={true}");
+        expect(fixed.output).toContain("required={false}");
     });
 
-    return eslint.lintText(source, { filePath });
-};
-
-it("requires uppercase primitive constants while allowing runtime objects and pseudo-enums", async () => {
-    const [result] = await lintTypedSource(`
+    it("requires uppercase primitive constants while allowing runtime objects and pseudo-enums", async () => {
+        const [result] = await lintTypedSource(`
         const retryCount = 2;
 
         const config = { apiUrl: "https://example.test" };
@@ -692,24 +667,25 @@ it("requires uppercase primitive constants while allowing runtime objects and ps
 
         export { retryCount, config, system, logger, PseudoEnum, CONSTANT_LABELS, createLabels, Component, Route, total };
     `);
-    const namingErrors = result.messages.filter(
-        (message) => message.ruleId === "@typescript-eslint/naming-convention"
-    );
+        const namingErrors = result.messages.filter(
+            (message) =>
+                message.ruleId === "@typescript-eslint/naming-convention"
+        );
 
-    expect(namingErrors).toHaveLength(1);
-    expect(namingErrors[0].message).toContain("retryCount");
-});
-
-it("requires type declarations at module scope while allowing exported types and augmentations", async () => {
-    const eslint = new ESLint({
-        overrideConfigFile: true,
-        overrideConfig: [
-            ...fullConfig,
-            tseslint.configs.disableTypeChecked,
-            { rules: { "@typescript-eslint/naming-convention": "off" } },
-        ],
+        expect(namingErrors).toHaveLength(1);
+        expect(namingErrors[0].message).toContain("retryCount");
     });
-    const source = `
+
+    it("requires type declarations at module scope while allowing exported types and augmentations", async () => {
+        const eslint = new ESLint({
+            overrideConfigFile: true,
+            overrideConfig: [
+                ...fullConfig,
+                tseslint.configs.disableTypeChecked,
+                { rules: { "@typescript-eslint/naming-convention": "off" } },
+            ],
+        });
+        const source = `
         export type Global = string;
 
         declare module "example" {
@@ -724,15 +700,159 @@ it("requires type declarations at module scope while allowing exported types and
 
         export { read };
     `;
-    const [result] = await eslint.lintText(source, {
-        filePath: "apps/web/src/example.ts",
-    });
-    const scopeErrors = result.messages.filter(
-        (message) => message.ruleId === "no-restricted-syntax"
-    );
+        const [result] = await eslint.lintText(source, {
+            filePath: "apps/web/src/example.ts",
+        });
+        const scopeErrors = result.messages.filter(
+            (message) => message.ruleId === "no-restricted-syntax"
+        );
 
-    expect(scopeErrors).toHaveLength(2);
-    expect(
-        scopeErrors.every((message) => message.message.includes("module scope"))
-    ).toBe(true);
+        expect(scopeErrors).toHaveLength(2);
+        expect(
+            scopeErrors.every((message) =>
+                message.message.includes("module scope")
+            )
+        ).toBe(true);
+    });
+
+    describe("test boundaries", () => {
+        it("requires one outer suite for tests and lifecycle hooks", async () => {
+            const eslint = createBoundaryLinter();
+            const source = `
+                import { beforeEach, describe, it, test } from "vitest";
+                beforeEach(() => {});
+                it("bare", () => {});
+                test.each([1])("parameterized %s", () => {});
+                describe("First", () => {});
+                describe("Second", () => {});
+            `;
+
+            const [result] = await eslint.lintText(source, {
+                filePath: "fixture.test.ts",
+            });
+            const diagnostics = result.messages.filter(
+                (message) =>
+                    message.ruleId === "vitest/require-top-level-describe"
+            );
+
+            expect(diagnostics.map((message) => message.messageId)).toEqual([
+                "unexpectedHook",
+                "unexpectedTestCase",
+                "unexpectedTestCase",
+                "tooManyDescribes",
+            ]);
+        });
+
+        it("allows nested suites and scoped lifecycle hooks", async () => {
+            const eslint = createBoundaryLinter();
+            const source = `
+                import { beforeEach, describe, it } from "vitest";
+                describe("Service", () => {
+                    beforeEach(() => {});
+                    describe("operation", () => {
+                        it.each([1])("value %s", () => {});
+                    });
+                });
+            `;
+
+            const [result] = await eslint.lintText(source, {
+                filePath: "fixture.test.ts",
+            });
+
+            expect(
+                result.messages.filter(
+                    (message) =>
+                        message.ruleId === "vitest/require-top-level-describe"
+                )
+            ).toEqual([]);
+        });
+
+        it.each([
+            'import { factory } from "../test-utils/factory.js";',
+            'export { factory } from "../test-utils/index.js";',
+            'import type { Fixture } from "../test-utils/types.js";',
+            'import { factory } from "./feature-test-utils.js";',
+        ])(
+            "blocks static production dependencies on test utilities: %s",
+            async (source) => {
+                const eslint = createBoundaryLinter();
+
+                const [result] = await eslint.lintText(source, {
+                    filePath: "apps/api/src/fixture.ts",
+                });
+
+                expect(
+                    result.messages.filter(
+                        (message) => message.ruleId === "no-restricted-imports"
+                    )
+                ).toHaveLength(1);
+            }
+        );
+
+        it.each([
+            "apps/api/src/fixture.test.ts",
+            "apps/api/test/integration.ts",
+            "apps/api/test-utils/fixture.ts",
+            "scripts/init-test-utils.ts",
+        ])("allows test utility dependencies from %s", async (filePath) => {
+            const eslint = createBoundaryLinter();
+
+            const [result] = await eslint.lintText(
+                'import { factory } from "../test-utils/factory.js";',
+                { filePath }
+            );
+
+            expect(
+                result.messages.filter(
+                    (message) => message.ruleId === "no-restricted-imports"
+                )
+            ).toEqual([]);
+        });
+    });
 });
+
+async function lintTypedSource(source) {
+    const filePath = resolve("packages/common/src/typed-fixture.ts");
+    // Keep policy fixtures independent of disk caches and application dependencies.
+    const compilerOptions = { strict: true, noLib: true, types: [] };
+    const host = ts.createCompilerHost(compilerOptions);
+
+    host.getSourceFile = (name) =>
+        name === filePath
+            ? ts.createSourceFile(name, source, ts.ScriptTarget.ES2023, true)
+            : undefined;
+
+    const program = ts.createProgram([filePath], compilerOptions, host);
+    const eslint = new ESLint({
+        overrideConfigFile: true,
+        overrideConfig: [
+            ...fullConfig,
+            {
+                languageOptions: {
+                    parserOptions: { project: false, programs: [program] },
+                },
+            },
+        ],
+    });
+
+    return eslint.lintText(source, { filePath });
+}
+
+function createBoundaryLinter() {
+    return new ESLint({
+        overrideConfigFile: true,
+        overrideConfig: [
+            ...fullConfig,
+            {
+                languageOptions: { parserOptions: { project: false } },
+                rules: {
+                    "@typescript-eslint/consistent-type-exports": "off",
+                    "@typescript-eslint/strict-boolean-expressions": "off",
+                    "@typescript-eslint/naming-convention": "off",
+                    "@typescript-eslint/no-unused-vars": "off",
+                    "no-unused-vars": "off",
+                },
+            },
+        ],
+    });
+}
