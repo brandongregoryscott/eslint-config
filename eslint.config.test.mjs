@@ -595,13 +595,101 @@ describe("eslint config", () => {
         });
         const ruleIds = result.messages.map((message) => message.ruleId);
 
-        expect(ruleIds).toContain("collation/no-destructured-props-parameter");
+        expect(ruleIds).toContain("collation/no-destructured-parameter");
         expect(ruleIds).toContain("react/jsx-boolean-value");
         expect(
             result.messages.filter(
                 (message) => message.ruleId === "no-restricted-syntax"
             )
         ).toHaveLength(2);
+    });
+
+    it.each([
+        {
+            name: "ordinary functions",
+            source: "function read({ value }: Input) { return value; }",
+        },
+        {
+            name: "arrow functions with array parameters",
+            source: "const read = ([value]: string[]) => value;",
+        },
+        {
+            name: "function expressions",
+            source: "const read = function ({ value }: Input) { return value; };",
+        },
+        {
+            name: "class methods",
+            source: "class Reader { read({ value }: Input) { return value; } }",
+        },
+        {
+            name: "React components",
+            filePath: "fixtures/parameters.tsx",
+            source: "const Example = ({ value }: Input) => <span>{value}</span>;",
+        },
+    ])("requires body parameter destructuring for $name", async (testCase) => {
+        const eslint = new ESLint({
+            overrideConfigFile: true,
+            overrideConfig: [
+                ...fullConfig,
+                tseslint.configs.disableTypeChecked,
+                { rules: { "@typescript-eslint/naming-convention": "off" } },
+            ],
+        });
+        const [result] = await eslint.lintText(testCase.source, {
+            filePath: testCase.filePath ?? "fixtures/parameters.ts",
+        });
+        const diagnostics = result.messages.filter(
+            (message) =>
+                message.ruleId === "collation/no-destructured-parameter"
+        );
+
+        expect(result.fatalErrorCount).toBe(0);
+        expect(diagnostics).toHaveLength(1);
+        expect(diagnostics[0].severity).toBe(2);
+    });
+
+    it("allows named parameters with destructuring in function and method bodies", async () => {
+        const eslint = new ESLint({
+            overrideConfigFile: true,
+            overrideConfig: [
+                ...fullConfig,
+                tseslint.configs.disableTypeChecked,
+                { rules: { "@typescript-eslint/naming-convention": "off" } },
+            ],
+        });
+        const source = `
+            function read(input: Input) {
+                const { value } = input;
+                return value;
+            }
+            class Reader {
+                read(input: Input) {
+                    const { value } = input;
+                    return value;
+                }
+            }
+            const Example = (props: Input) => {
+                const { value } = props;
+                return <span>{value}</span>;
+            };
+        `;
+        const [result] = await eslint.lintText(source, {
+            filePath: "fixtures/parameters.tsx",
+        });
+        const effective = await eslint.calculateConfigForFile(
+            "fixtures/parameters.tsx"
+        );
+
+        expect(result.fatalErrorCount).toBe(0);
+        expect(
+            result.messages.filter(
+                (message) =>
+                    message.ruleId === "collation/no-destructured-parameter"
+            )
+        ).toEqual([]);
+        expect(
+            effective.rules["collation/no-destructured-props-parameter"]
+        ).toBeUndefined();
     });
 
     it("autofixes shorthand boolean props with the dedicated React rule", async () => {
